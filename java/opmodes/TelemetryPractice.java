@@ -33,6 +33,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -59,6 +60,10 @@ public class TelemetryPractice extends OpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
+    private Servo servo;
+    final double OPEN_SERVO = 0;
+    final double CLOSE_SERVO = 180;
+    private double curr_servo_pos;
     /*
      * Code to run ONCE when the driver hits INIT
      */
@@ -112,10 +117,12 @@ public class TelemetryPractice extends OpMode
 
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
-        leftPower    = Range.clip(drive + turn, -2.0, 1.0) ;
-        rightPower   = Range.clip(drive - turn, -1.0, 2.0) ;
+        double leftdrive = -gamepad1.left_stick_y;
+        double leftturn = gamepad1.left_stick_x;
+        double rightdrive = gamepad1.right_stick_y;
+        double rightturn  =  gamepad1.right_stick_x;
+        leftPower    = Range.clip(leftdrive + leftturn, -2.0, 1.0) ;
+        rightPower   = Range.clip(rightdrive - rightturn, -1.0, 2.0) ;
 
         // Tank Mode uses one stick to control each wheel.
         // - This requires no math, but it is hard to drive forward slowly and keep straight.
@@ -132,6 +139,11 @@ public class TelemetryPractice extends OpMode
             telemetry.addData("Drive direction:", "BACKWARDS");
         }
 
+        telemetry.addData("Left Drive", "left (%.2f),", leftdrive);
+        telemetry.addData("Left Turn", "left (%.2f)", leftturn);
+        telemetry.addData("Right Drive", "right (%.2f),", rightdrive);
+        telemetry.addData("Right Turn", "right (%.2f)", rightturn);
+
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
@@ -146,5 +158,11 @@ public class TelemetryPractice extends OpMode
     @Override
     public void stop() {
     }
+    public void servoOpen() {
 
+    }
+    public void servoClose() {
+
+    }
 }
+
