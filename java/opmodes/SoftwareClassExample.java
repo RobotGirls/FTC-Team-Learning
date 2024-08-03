@@ -56,26 +56,38 @@ import com.qualcomm.robotcore.util.Range;
 public class SoftwareClassExample extends OpMode
 {
     // Declare OpMode members.
+    Servo claw;
+
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
     private Servo servo;
-    final double OPEN_SERVO = 0;
-    final double CLOSE_SERVO = 180;
+    final double OPEN_SERVO = 0.5;
+    final double CLOSE_SERVO = 0;
     private double curr_servo_pos;
+    private Servo.Direction servoDirection; //choices are FORWARD or BACKWARDs
+    private enum Servostate {
+        SERVO_OPEN_STATE,
+        SERVO_CLOSED_STATE
+    }
+    private Servostate servoState;
+
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
-        telemetry.addData("Status", "Initialized Start");
+        //telemetry.addData("Status", "Initialized Start");
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+
+        servo = hardwareMap.get(Servo.class, "servo");
+        servoClose();
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -84,7 +96,7 @@ public class SoftwareClassExample extends OpMode
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized End");
+        //telemetry.addData("Status", "Initialized End");
     }
 
     /*
@@ -99,8 +111,11 @@ public class SoftwareClassExample extends OpMode
      */
     @Override
     public void start() {
-        telemetry.addData("Status", "In Start Method");
+        //telemetry.addData("Status", "In Start Method");
+        servoOpen();
+        servoDirection = servo.getDirection();
         runtime.reset();
+        telemetry.addData("Servo direction:", servo.getDirection());
     }
 
     /*
@@ -118,9 +133,9 @@ public class SoftwareClassExample extends OpMode
         // POV Mode uses left stick to go forward, and right stick to turn.
         // - This uses basic math to combine motions and is easier to drive straight.
         double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
-        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+        double turn = gamepad1.right_stick_x;
+        leftPower = Range.clip(drive + turn, -1.0, 1.0);
+        rightPower = Range.clip(drive - turn, -1.0, 1.0);
 
         // Tank Mode uses one stick to control each wheel.
         // - This requires no math, but it is hard to drive forward slowly and keep straight.
@@ -131,10 +146,27 @@ public class SoftwareClassExample extends OpMode
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
 
+        //if X button on the gamepad is pressed, then change direction and move servo
+        if (gamepad1.x) {
+            if (servoDirection == Servo.Direction.FORWARD) {
+                servoDirection = Servo.Direction.REVERSE;
+
+            } else {
+                servoDirection = Servo.Direction.FORWARD;
+            }
+            servo.setDirection(servoDirection);
+            if (servoState == Servostate.SERVO_CLOSED_STATE) {
+                servoOpen();
+            } else {
+                servoClose();
+            }
+        }
+
+
         // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f)", leftPower);
-        telemetry.addData("Motors", "right (%.2f)", rightPower);
+        //telemetry.addData("Status", "Run Time: " + runtime.toString());
+        //telemetry.addData("Motors", "left (%.2f)", leftPower);
+        //telemetry.addData("Motors", "right (%.2f)", rightPower);
         telemetry.addData("Gamepad", "leftstick y (%.2f)", gamepad1.left_stick_y);
         telemetry.addData("Gamepad", "rightstick y (%.2f)", gamepad1.right_stick_y);
         telemetry.addData("Gamepad", "leftstick x (%.2f)", gamepad1.left_stick_x);
@@ -149,9 +181,12 @@ public class SoftwareClassExample extends OpMode
     }
 
     public void servoOpen() {
-
+        servo.setPosition(OPEN_SERVO);
+        telemetry.addData("Servo Open position ", OPEN_SERVO);
     }
     public void servoClose() {
-
+        servo.setPosition(CLOSE_SERVO);
+        telemetry.addData("Servo CLOSE position ",CLOSE_SERVO);
+        servoState = Servostate.SERVO_CLOSED_STATE;
     }
 }
