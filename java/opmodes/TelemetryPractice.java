@@ -61,28 +61,33 @@ public class TelemetryPractice extends OpMode
 
 
     private Servo servo;
-    final double OPEN_SERVO = 0;
-    final double CLOSE_SERVO = 180;
+    final double OPEN_SERVO = 0.5;
+    final double CLOSE_SERVO = 0;
     private double curr_servo_pos;
 
-    Servo claw;
-    private final double POSITION_ONE = 0.3;
-    private final double POSITION_TWO = 0.5;
+    private Servo.Direction servoDirection; // choices are FORWARDS or BACKWARDS
+
+    private enum ServoState {
+        SERVO_OPEN_STATE,
+        SERVO_CLOSED_STATE
+    }
+    private ServoState servoState;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
+        // telemetry.addData("Status", "Initialized Start");
 
-        claw = hardwareMap.servo.get("claw");
-
-        telemetry.addData("Status", "Initialized Start");
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+
+        servo = hardwareMap.get(Servo.class, "Servo");
+        servoClose();
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -91,7 +96,7 @@ public class TelemetryPractice extends OpMode
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
 
         // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized End");
+        // telemetry.addData("Status", "Initialized End");
     }
 
     /*
@@ -106,17 +111,11 @@ public class TelemetryPractice extends OpMode
      */
     @Override
     public void start() {
-        telemetry.addData("Status", " Called start method");
+        // telemetry.addData("Status", " Called start method");
+        servoClose();
+        servoDirection = servo.getDirection();
+        telemetry.addData("Servo Direction: ",  servoDirection);
         runtime.reset();
-        if (gamepad2.a) {
-            claw.setPosition(POSITION_ONE);
-            telemetry.addData("Status", "Claw at position 0.3");
-        } else if (gamepad2.b) {
-            claw.setPosition(POSITION_TWO);
-            telemetry.addData("Status","Claw at position 0.5");
-
-
-        }
     }
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
@@ -144,24 +143,53 @@ public class TelemetryPractice extends OpMode
         rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
         // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
+        // This requires no math, but it is hard to drive forward slowly and keep straight.
         // leftPower  = -gamepad1.left_stick_y ;
-        // rightPower = -gamepad1.right_stick_y ;
+        // rightPower = -gamepad1.right_stick_x;
+
+        // if x button on the gamepad is pressed, then change direction and move servo
+        if (gamepad1.x) {
+           if (servoDirection == Servo.Direction.FORWARD) {
+                servoDirection = Servo.Direction.REVERSE;
+            } else {
+            servoDirection = Servo.Direction.FORWARD;
+            }
+            servo.setDirection(servoDirection);
+           if (servoState == ServoState.SERVO_CLOSED_STATE) {
+               servoOpen();
+           } else {
+               servoClose();
+           }
+        }
+
 
         // Send calculated power to wheels
         leftDrive.setPower(leftPower);
         rightDrive.setPower(rightPower);
 
         // Show the elapsed game time and wheel power.
-           telemetry.addData("Status", "Run Time: " + runtime.toString());
+        // telemetry.addData("Status", "Run Time: " + runtime.toString());
         // telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-           telemetry.addData("Motors", "left (%.2f)", leftPower);
-           telemetry.addData("Motors", "right (%.2f)", rightPower);
+        // telemetry.addData("Motors", "left (%.2f)", leftPower);
+        // telemetry.addData("Motors", "right (%.2f)", rightPower);
     }
 
     /*
      * Code to run ONCE after the driver hits STOP
      */
+
+    public void servoClose() {
+        servo.setPosition(CLOSE_SERVO);
+        servoState = ServoState.SERVO_CLOSED_STATE;
+        telemetry.addData("Servo Close: Position ",  CLOSE_SERVO);
+
+    }
+    public void servoOpen() {
+        servo.setPosition(OPEN_SERVO);
+        servoState = ServoState.SERVO_OPEN_STATE;
+        telemetry.addData("Servo Open: Position ", OPEN_SERVO);
+
+    }
     @Override
     public void stop() {
     }
