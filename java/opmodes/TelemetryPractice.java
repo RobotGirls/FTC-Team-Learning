@@ -59,16 +59,24 @@ public class TelemetryPractice extends OpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
+
     private Servo servo;
     final double OPEN_SERVO = 0;
     final double CLOSE_SERVO = 180;
     private double curr_servo_pos;
+
+    Servo claw;
+    private final double POSITION_ONE = 0.3;
+    private final double POSITION_TWO = 0.5;
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
+
+        claw = hardwareMap.servo.get("claw");
+
         telemetry.addData("Status", "Initialized Start");
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -100,8 +108,16 @@ public class TelemetryPractice extends OpMode
     public void start() {
         telemetry.addData("Status", " Called start method");
         runtime.reset();
-    }
+        if (gamepad2.a) {
+            claw.setPosition(POSITION_ONE);
+            telemetry.addData("Status", "Claw at position 0.3");
+        } else if (gamepad2.b) {
+            claw.setPosition(POSITION_TWO);
+            telemetry.addData("Status","Claw at position 0.5");
 
+
+        }
+    }
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
      */
@@ -150,10 +166,5 @@ public class TelemetryPractice extends OpMode
     public void stop() {
     }
 
-    public void servoOpen() {
-
-    }
-    public void servoClose() {
-
-    }
 }
+
