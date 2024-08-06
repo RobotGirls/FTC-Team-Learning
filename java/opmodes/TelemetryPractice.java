@@ -59,6 +59,10 @@ public class TelemetryPractice extends OpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
+    Servo claw;
+    private final double POSITION_ONE = 0.3;
+    private final double POSITION_TWO = 0.5;
+
 
     private Servo servo;
     final double OPEN_SERVO = 0.5;
@@ -87,7 +91,7 @@ public class TelemetryPractice extends OpMode
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
         servo = hardwareMap.get(Servo.class, "Servo");
-        servoClose();
+        claw = hardwareMap.servo.get("claw");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -116,6 +120,16 @@ public class TelemetryPractice extends OpMode
         servoDirection = servo.getDirection();
         telemetry.addData("Servo Direction: ",  servoDirection);
         runtime.reset();
+        if (gamepad2.a) {
+            claw.setPosition(POSITION_ONE);
+            telemetry.addData("Status","Claw position at 0.3");
+        } else if (gamepad2.b) {
+            claw.setPosition(POSITION_TWO);
+            telemetry.addData("Status","Claw Position at 0.5");
+        } else if (gamepad2.y) {
+            claw.setPosition(gamepad1.left_stick_y);
+            telemetry.addData("Status","Claw Position aligned with left Y-stick");
+        }
     }
     /*
      * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
