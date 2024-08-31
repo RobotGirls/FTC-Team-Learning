@@ -60,7 +60,7 @@ public class TelemetryPractice extends OpMode
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
 
-    private Servo servo;
+    private Servo servo1;
     final double OPEN_SERVO = 0;
     final double CLOSE_SERVO = 180;
     private double curr_servo_pos;
@@ -76,6 +76,7 @@ public class TelemetryPractice extends OpMode
         // step (using the FTC Robot Controller app on the phone).
         leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        servo1 = hardwareMap.servo.get("claw");
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -99,6 +100,17 @@ public class TelemetryPractice extends OpMode
      */
     @Override
     public void start() {
+        if (gamepad2.a) {
+            servo1.setPosition(1);
+            telemetry.addData("Claw Position", curr_servo_pos);
+
+
+        }
+        else if (gamepad2.b){
+            servo1.setPosition(0);
+            telemetry.addData("Claw Position", curr_servo_pos);
+
+        }
         telemetry.addData("Status", "Initialized Start");
         runtime.reset();
     }
@@ -121,6 +133,7 @@ public class TelemetryPractice extends OpMode
         double leftturn = gamepad1.left_stick_x;
         double rightdrive = gamepad1.right_stick_y;
         double rightturn  =  gamepad1.right_stick_x;
+
         leftPower    = Range.clip(leftdrive + leftturn, -2.0, 1.0) ;
         rightPower   = Range.clip(rightdrive - rightturn, -1.0, 2.0) ;
 
